@@ -36,3 +36,4 @@ stm32f40_41xxx\main.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_can
 stm32f40_41xxx\main.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dac.h
 stm32f40_41xxx\main.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dcmi.h
 stm32f40_41xxx\main.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_fsmc.h
+stm32f40_41xxx\main.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_sai.h
