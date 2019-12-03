@@ -1,0 +1,20 @@
+--cpu=Cortex-M4.fp
+"stm32f40_41xxx\system_stm32f4xx.o"
+"stm32f40_41xxx\stm32f4xx_it.o"
+"stm32f40_41xxx\main.o"
+"stm32f40_41xxx\misc.o"
+"stm32f40_41xxx\stm32f4xx_crc.o"
+"stm32f40_41xxx\stm32f4xx_dma.o"
+"stm32f40_41xxx\stm32f4xx_dma2d.o"
+"stm32f40_41xxx\stm32f4xx_exti.o"
+"stm32f40_41xxx\stm32f4xx_gpio.o"
+"stm32f40_41xxx\stm32f4xx_rcc.o"
+"stm32f40_41xxx\stm32f4xx_sai.o"
+"stm32f40_41xxx\stm32f4xx_sdio.o"
+"stm32f40_41xxx\stm32f4xx_syscfg.o"
+"stm32f40_41xxx\stm32f4xx_tim.o"
+"stm32f40_41xxx\startup_stm32f40_41xxx.o"
+--library_type=microlib --strict --scatter "STM32F40_41xxx\STM32F40_41xxx.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "STM32F40_41xxx.map" -o STM32F40_41xxx\STM32F40_41xxx.axf
