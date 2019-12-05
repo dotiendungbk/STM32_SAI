@@ -10,18 +10,23 @@
 
 static __IO uint32_t uwTimingDelay;
 RCC_ClocksTypeDef RCC_Clocks;
-
+uint8_t clk;
 /* Private function prototypes -----------------------------------------------*/
 static void Delay(__IO uint32_t nTime);
-void My_GPIO_Init();
-void My_SAI_Init();
-int main(void)
+void My_GPIO_Init(void);
+void My_SAI_Init(void);
+void HSE_config(void);
+int main(void) 
 {
   
   /* SysTick end of count event each 10ms */
-  RCC_GetClocksFreq(&RCC_Clocks);
+	HSE_config();
+	SystemCoreClockUpdate();
   SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
+	RCC_GetClocksFreq(&RCC_Clocks);
+	clk=RCC_GetSYSCLKSource();
 	My_GPIO_Init();
+	My_SAI_Init();
     
   /* Infinite loop */
   while (1)
@@ -44,7 +49,43 @@ void Delay(__IO uint32_t nTime)
 
   while(uwTimingDelay != 0);
 }
+void HSE_config(void)
+{    
+  /* Deinit the RCC config, this function must be call when config PLL*/
+    RCC_DeInit();
+    /*Turn on HSE*/
+    RCC_HSEConfig(RCC_HSE_ON);
+    /*Wait HSE stable*/
+    RCC_WaitForHSEStartUp();
+ 
+      
+    /*Config level of voltage to accord with frequency*/    
+    PWR_MainRegulatorModeConfig(PWR_Regulator_Voltage_Scale1);
+      
+    /*AHB (HCLK) Config*/
+    RCC_HCLKConfig(RCC_SYSCLK_Div1);
+    /* APB1 (PCLK1) Config*/
+    RCC_PCLK1Config(RCC_HCLK_Div4);
+    /* APB2 (PCLK2) Config*/
+    RCC_PCLK2Config(RCC_HCLK_Div2);
+    /*Config PLL : If want to use this function, we must use RCC_Deinit() before because
+    *PLL just config one time and it configed in SetSysClock() 
+    */
+    RCC_PLLConfig(RCC_PLLSource_HSE,4,168,2,7);
+    /*Enable PLL*/
+    RCC_PLLCmd(ENABLE);
+    /* Wait PLL state is stable*/
+    while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY)==RESET){}
+    
+      /*Config the latency of flash memory */
+    FLASH_PrefetchBufferCmd(ENABLE);
+    FLASH_SetLatency(FLASH_Latency_5);
 
+    /*Choose PLL as system clock*/
+    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+    /*Wait for CPU choose the source as HSE*/
+    while(RCC_GetSYSCLKSource()!= 0x08) {}
+}
 /**
   * @brief  Decrements the TimingDelay variable.
   * @param  None
@@ -57,7 +98,7 @@ void TimingDelay_Decrement(void)
     uwTimingDelay--;
   }
 }
-void My_GPIO_Init(){
+void My_GPIO_Init(void){
   GPIO_InitTypeDef GPIO_InitStructure;
   /* Output HSE clock on MCO1 pin(PA8) ****************************************/ 
   /* Enable the GPIOA peripheral */ 
@@ -98,17 +139,29 @@ void My_GPIO_Init(){
  // RCC_MCO2Config(RCC_MCO2Source_SYSCLK, RCC_MCO2Div_4);
 
 }
-void My_SAI_Init(){
-  SAI_InitTypeDef SAI_Init;
-	SAI_Init.SAI_AudioMode=SAI_Mode_MasterRx;
-	SAI_Init.SAI_Protocol=SAI_Free_Protocol;
-	SAI_Init.SAI_DataSize=SAI_DataSize_32b;
-	SAI_Init.SAI_FirstBit=SAI_FirstBit_MSB;
-	SAI_Init.SAI_ClockStrobing=SAI_ClockStrobing_FallingEdge;
-	SAI_Init.SAI_Synchro=SAI_Synchronous;
-	SAI_Init.SAI_OUTDRIV=SAI_OutputDrive_Disabled;
-	SAI_Init.SAI_FIFOThreshold=SAI_FIFOThreshold_1QuarterFull;
-
+void My_SAI_Init(void){
+	RCC_AHB2PeriphClockCmd(RCC_APB2Periph_SAI1,ENABLE);
+	
+  SAI_InitTypeDef MSAI_Init;
+	
+	MSAI_Init.SAI_AudioMode=SAI_Mode_MasterTx;
+	MSAI_Init.SAI_Protocol=SAI_Free_Protocol;
+	MSAI_Init.SAI_DataSize=SAI_DataSize_32b;
+	MSAI_Init.SAI_FirstBit=SAI_FirstBit_MSB;
+	MSAI_Init.SAI_ClockStrobing=SAI_ClockStrobing_FallingEdge;
+	MSAI_Init.SAI_Synchro=SAI_Asynchronous;
+	MSAI_Init.SAI_SynchroExt=SAI_SyncExt_OutBlockA_Enable;
+	MSAI_Init.SAI_OUTDRIV=SAI_OutputDrive_Disabled;
+	MSAI_Init.SAI_FIFOThreshold=SAI_FIFOThreshold_1QuarterFull;
+	SAI_Init(SAI1_Block_A,&MSAI_Init);
+	//Configuration Frame
+	SAI_FrameInitTypeDef MSAI_Frame;
+	MSAI_Frame.SAI_FrameLength=256;					//chua biet
+	MSAI_Frame.SAI_ActiveFrameLength=128;	//chua biet
+	MSAI_Frame.SAI_FSDefinition=SAI_FS_StartFrame;
+	MSAI_Frame.SAI_FSPolarity=SAI_FS_ActiveLow;
+	MSAI_Frame.SAI_FSOffset=SAI_FS_FirstBit;
+	SAI_FrameInit(SAI1_Block_A,&MSAI_Frame);
 	
   
 }
