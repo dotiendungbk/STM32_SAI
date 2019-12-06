@@ -156,14 +156,22 @@ void My_SAI_Init(void){
 	SAI_Init(SAI1_Block_A,&MSAI_Init);
 	//Configuration Frame
 	SAI_FrameInitTypeDef MSAI_Frame;
-	MSAI_Frame.SAI_FrameLength=256;					//chua biet
-	MSAI_Frame.SAI_ActiveFrameLength=128;	//chua biet
+	MSAI_Frame.SAI_FrameLength=64;					//chua biet
+	MSAI_Frame.SAI_ActiveFrameLength=32;	//chua biet
 	MSAI_Frame.SAI_FSDefinition=SAI_FS_StartFrame;
 	MSAI_Frame.SAI_FSPolarity=SAI_FS_ActiveLow;
 	MSAI_Frame.SAI_FSOffset=SAI_FS_FirstBit;
 	SAI_FrameInit(SAI1_Block_A,&MSAI_Frame);
-	
-  
+	//Configuration Slot
+  SAI_SlotInitTypeDef MSAI_Slot;
+	MSAI_Slot.SAI_FirstBitOffset=0;
+	MSAI_Slot.SAI_SlotActive=SAI_Slot_NotActive;
+	MSAI_Slot.SAI_SlotNumber=1;
+	MSAI_Slot.SAI_SlotSize=SAI_SlotSize_32b;
+	SAI_SlotInit(SAI1_Block_A,&MSAI_Slot);
+	//Enable SAI
+	SAI_Cmd(SAI1_Block_A,ENABLE);
+	SAI_MonoModeConfig(SAI1_Block_A,SAI_MonoMode);
 }
 #ifdef  USE_FULL_ASSERT
 
